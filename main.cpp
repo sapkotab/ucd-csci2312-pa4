@@ -15,7 +15,7 @@ int main() {
 
     const int NumIters = 3;
 
-    cout << endl << "Testing PA5!!" << endl << endl;
+    cout << endl << "Testing PA4!!" << endl << endl;
 
     cout << "NOTE:  If you see any memory errors, you MUST fix them!" << endl;
     cout << "       Tests intentionally invoke destructors after they complete,"
