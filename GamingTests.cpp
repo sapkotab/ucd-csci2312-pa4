@@ -1019,7 +1019,7 @@ void test_game_populate(ErrorContext &ec, unsigned int numRuns) {
 
             ec.result(pass);
         }
-
+//
         ec.DESC("3x3 grid, auto population");
 
         {
@@ -1196,7 +1196,7 @@ void test_game_getpiece(ErrorContext &ec, unsigned int numRuns){
 
             ec.result(pass);
         }
-
+//
         ec.DESC("4x5 grid, auto population");
 
         {
@@ -1260,393 +1260,393 @@ void test_game_getpiece(ErrorContext &ec, unsigned int numRuns){
 
             ec.result(pass);
         }
-    }
-}
-
-
-// Printing of a game
-void test_game_print(ErrorContext &ec, unsigned int numRuns) {
-    bool pass;
-
-    // Run at least once!!
-    assert(numRuns > 0);
-
-    ec.DESC("--- Test - Game - Print ---");
-
-    for (int run = 0; run < numRuns; run++) {
-
-        ec.DESC("3x3 grid, automatic population");
-
-        {
-            Game g(3, 3, false);
-
-            std::stringstream ss;
-            ss << g;
-            std::string line;
-            getline(ss, line);
-            std::regex re("Round [[:d:]]{1,3}");
-            std::smatch m;
-            std::regex_search(line, m, re);
-            pass = (m.size() == 1);
-//            if (! pass) std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
-            for (int i = 0; i < 3; i++) {
-                getline(ss, line);
-                std::regex re1("(\\[([[:alpha:]]{1}[[:d:]]{1,4}[ ]?|[ ]{5})\\]){3}");
-                std::regex_search(line, m, re1);
-                pass = pass && (m.size() == 3);
-//                if (! pass) {
-//                    std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
-//                }
-            }
-            getline(ss, line);
-            std::regex re2("Status:");
-            std::regex_search(line, m, re2);
-            pass = pass && (m.size() == 1);
-
-            ec.result(pass);
-        }
-
-        ec.DESC("7x6 grid, automatic population");
-
-        {
-            Game g(7, 6, false);
-
-            std::stringstream ss;
-            ss << g;
-            std::string line;
-            getline(ss, line);
-            std::regex re("Round [[:d:]]{1,3}");
-            std::smatch m;
-            std::regex_search(line, m, re);
-            pass = (m.size() == 1);
-//            if (! pass) std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
-            for (int i = 0; i < 6; i++) {
-                getline(ss, line);
-                std::regex re1("(\\[([[:alpha:]]{1}[[:d:]]{1,4}[ ]?|[ ]{5})\\]){7}");
-                std::regex_search(line, m, re1);
-                pass = pass && (m.size() == 3);
-//                if (! pass) {
-//                    std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
-//                }
-            }
-            getline(ss, line);
-            std::regex re2("Status:");
-            std::regex_search(line, m, re2);
-            pass = pass && (m.size() == 1);
-
-            ec.result(pass);
-        }
-    }
-}
-
-// Randomization of motion
-void test_game_randomization(ErrorContext &ec, unsigned int numRuns) {
-    bool pass;
-
-    // Run at least once!!
-    assert(numRuns > 0);
-
-    ec.DESC("--- Test - Game - Randomization ---");
-
-    for (int run = 0; run < numRuns; run++) {
-
-        ec.DESC("position randomizer");
-
-        {
-            std::vector<int> positions;
-            for (int i = 0; i < 4; i++) positions.push_back(i);
-            for (int i = 5; i < 9; i++) positions.push_back(i);
-            Position pos;
-            unsigned counts[9];
-            for (auto &c : counts) c = 0;
-            for (int i = 0; i < 1000; i++) {
-                pos = Game::randomPosition(positions);
-                ++ counts[pos.x * 3 + pos.y];
-            }
-
-            pass = counts[0] > 100 &&
-                    counts[1] > 100 &&
-                    counts[2] > 100 &&
-                    counts[3] > 100 &&
-                    counts[4] == 0 &&
-                    counts[5] > 100 &&
-                    counts[6] > 100 &&
-                    counts[7] > 100 &&
-                    counts[8] > 100;
-
-            if (! pass) for (auto c : counts) std::cout << c << ' ';
-
-
-            ec.result(pass);
-        }
-
-        ec.DESC("position randomizer, empty vector (exception generated)");
-
-        {
-            std::vector<int> positions;
-
-            try {
-                Position pos = Game::randomPosition(positions);
-                pass = false;
-            } catch (PosVectorEmptyEx &ex) {
-                std::cerr << "Exception generated: " << ex << std::endl;
-                pass = (ex.getName() == "PosVectorEmptyEx");
-            }
-
-            ec.result(pass);
-        }
-
-        ec.DESC("random walk of a Simple agent");
-
-        {
-            Game g(101, 101);
-            Position pos(50, 50);
-            g.addSimple(Position(pos), 1000 * Game::STARTING_AGENT_ENERGY);
-            const Piece *piece = g.getPiece(pos.x, pos.y);
-
-            unsigned actionCounts[ActionType::STAY + 1];
-            for (auto &a : actionCounts) a = 0;
-            Position oldPos = pos;
-            for (int i = 0; i < 1000; i ++) {
-                g.round();
-                pos = piece->getPosition();
-                assert(pos.x != oldPos.x || pos.y != oldPos.y);
-                assert(piece->isViable());
-                ActionType actionType = g.reachSurroundings(oldPos, pos);
-                ++ actionCounts[actionType];
-                oldPos = pos;
-            }
-
-            pass = actionCounts[ActionType::NE] > 100 &&
-                    actionCounts[ActionType::NW] > 100 &&
-                    actionCounts[ActionType::N] > 100 &&
-                    actionCounts[ActionType::W] > 100 &&
-                    actionCounts[ActionType::E] > 100 &&
-                    actionCounts[ActionType::SW] > 100 &&
-                    actionCounts[ActionType::SE] > 100 &&
-                    actionCounts[ActionType::S] > 100 &&
-                    actionCounts[ActionType::STAY] == 0;
-
-            if (! pass) {
-                std::cout << std::endl;
-                for (auto c : actionCounts) std::cout << c << ' ';
-            }
-
-            ec.result(pass);
-        }
-
-    }
-}
-
-// Playing and termination of a game
-void test_game_play(ErrorContext &ec, unsigned int numRuns) {
-    bool pass;
-
-    // Run at least once!!
-    assert(numRuns > 0);
-
-    ec.DESC("--- Test - Game - Play ---");
-
-    for (int run = 0; run < numRuns; run++) {
-
-        ec.DESC("3x3 grid, manual, game w/o resources terminates immediately");
-
-        {
-            Game g; // manual = true, by default
-
-            g.play(); // verbose = false, by default
-
-            pass = (g.getNumResources() == 0);
-
-            ec.result(pass);
-        }
-
-        ec.DESC("3x3 grid, manual, 1 simple, 1 resource");
-
-        {
-            Game g; // manual = true, by default
-            g.addSimple(1, 1);
-            g.addFood(2, 2);
-
-            g.play(false); // verbose = false, by default
-
-            pass = (g.getNumResources() == 0) &&
-                   (g.getNumAgents() == 1);
-
-            ec.result(pass);
-        }
-
-        ec.DESC("3x3 grid, manual, 1 simple, 2 resources");
-
-        {
-            Game g; // manual = true, by default
-            g.addSimple(1, 1);
-            g.addFood(2, 2);
-            g.addAdvantage(1, 0);
-
-            g.play(false); // verbose = false, by default
-
-            pass = (g.getNumResources() == 0) &&
-                   (g.getNumAgents() == 1);
-
-            ec.result(pass);
-        }
-
-        ec.DESC("3x3 grid, manual, 1 simple, 3 resources");
-
-        {
-            Game g; // manual = true, by default
-            g.addSimple(0, 0);
-            g.addFood(0, 2);
-            g.addFood(2, 2);
-            g.addAdvantage(1, 0);
-
-            g.play(false); // verbose = false, by default
-
-            pass = (g.getNumResources() == 0) &&
-                   (g.getNumAgents() == 1);
-
-            ec.result(pass);
-        }
-
-        ec.DESC("3x3 grid, manual, 2 simple, 3 resources");
-
-        {
-            Game g; // manual = true, by default
-            g.addSimple(0, 0);
-            g.addSimple(0, 1);
-            g.addFood(0, 2);
-            g.addFood(2, 2);
-            g.addAdvantage(1, 0);
-
-            g.play(false); // verbose = false, by default
-
-            pass = (g.getNumResources() == 0) &&
-                   (g.getNumAgents() == 2);
-
-            ec.result(pass);
-        }
-
-        ec.DESC("3x3 grid, manual, 3 simple, 3 resources");
-
-        {
-            Game g; // manual = true, by default
-            g.addSimple(0, 0);
-            g.addSimple(0, 1);
-            g.addSimple(1, 1);
-            g.addFood(0, 2);
-            g.addFood(2, 2);
-            g.addAdvantage(1, 0);
-
-            g.play(false); // verbose = false, by default
-
-            pass = (g.getNumResources() == 0) &&
-                   (g.getNumAgents() == 3);
-
-            ec.result(pass);
-        }
-
-        ec.DESC("3x3 grid, manual, 1 default strategic, 1 simple, 3 resources");
-
-        {
-            Game g; // manual = true, by default
-            g.addSimple(0, 0);
-            g.addStrategic(0, 1);
-            g.addFood(0, 2);
-            g.addFood(2, 2);
-            g.addAdvantage(1, 0);
-
-            g.play(false); // verbose = false, by default
-
-            pass = (g.getNumResources() == 0) &&
-                   (g.getNumStrategic() == 1) &&
-                   (g.getNumSimple() == 1);
-
-            ec.result(pass);
-        }
-
-        ec.DESC("3x3 grid, manual, 1 aggressive strategic, 3 resources");
-
-        {
-            Game g; // manual = true, by default
-            g.addStrategic(0, 1, new AggressiveAgentStrategy(Game::STARTING_AGENT_ENERGY));
-            g.addFood(0, 2);
-            g.addFood(2, 2);
-            g.addAdvantage(1, 0);
-
-            g.play(false); // verbose = false, by default
-
-            pass = (g.getNumResources() == 0) &&
-                   (g.getNumStrategic() == 1);
-
-            ec.result(pass);
-        }
-
-        ec.DESC("3x3 grid, manual, 1 aggressive strategic, 1 far simple, 3 res");
-
-        {
-            Game g; // manual = true, by default
-            // In this configuration, the Simple and Strategic are far from each other
-            // and they might or might not get close to each other before the
-            // Resources run out
-            g.addStrategic(0, 1, new AggressiveAgentStrategy(Game::STARTING_AGENT_ENERGY));
-            g.addSimple(2, 1);
-            g.addFood(0, 2);
-            g.addFood(2, 2);
-            g.addAdvantage(1, 0);
-
-            g.play(false); // verbose = false, by default
-
-            pass = (g.getNumResources() == 0) &&
-                   (g.getNumStrategic() == 1 ) &&
-                   (g.getNumSimple() <= 1); // randomized game play
-
-            ec.result(pass);
-        }
-
-
-        ec.DESC("3x3 grid, manual, 1 aggressive strategic, 1 near simple, 3 res");
-
-        {
-            Game g; // manual = true, by default
-
-            // In this configuration, the Simple gets an Advantage and when the
-            // aggressive Strategic challenges it, the Strategic loses and disappears
-            g.addSimple(0, 0);
-            g.addStrategic(0, 1, new AggressiveAgentStrategy(Game::STARTING_AGENT_ENERGY));
-            g.addFood(0, 2);
-            g.addFood(2, 2);
-            g.addAdvantage(1, 0);
-
-            g.play(false); // verbose = false, by default
-
-            pass = (g.getNumResources() == 0) &&
-                   (g.getNumSimple() == 1) &&
-                   (g.getNumStrategic() == 0);
-
-            ec.result(pass);
-        }
-
-        ec.DESC("3x3 grid, manual, 1 def, 1 aggr, 1 simple, 2 resources");
-
-        {
-            Game g; // manual = true, by default
-            // In this situation, the default flees, the aggressive attacks either
-            // the default or the Simple, and the dies with it, leaving the other
-            // one to win
-            g.addStrategic(0, 0);
-            g.addSimple(1, 0);
-            g.addStrategic(0, 1, new AggressiveAgentStrategy(Game::STARTING_AGENT_ENERGY));
-            g.addFood(0, 2);
-            g.addFood(2, 2);
-
-            g.play(false); // verbose = false, by default
-
-            pass = (g.getNumResources() == 0) &&
-                   ((g.getNumStrategic() == 1 && g.getNumSimple() == 0) ||
-                    (g.getNumStrategic() == 0 && g.getNumSimple() == 1));
-
-            ec.result(pass);
-        }
+//    }
+//}
+//
+//
+//// Printing of a game
+//void test_game_print(ErrorContext &ec, unsigned int numRuns) {
+//    bool pass;
+//
+//    // Run at least once!!
+//    assert(numRuns > 0);
+//
+//    ec.DESC("--- Test - Game - Print ---");
+//
+//    for (int run = 0; run < numRuns; run++) {
+//
+//        ec.DESC("3x3 grid, automatic population");
+//
+//        {
+//            Game g(3, 3, false);
+//
+//            std::stringstream ss;
+//            ss << g;
+//            std::string line;
+//            getline(ss, line);
+//            std::regex re("Round [[:d:]]{1,3}");
+//            std::smatch m;
+//            std::regex_search(line, m, re);
+//            pass = (m.size() == 1);
+////            if (! pass) std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
+//            for (int i = 0; i < 3; i++) {
+//                getline(ss, line);
+//                std::regex re1("(\\[([[:alpha:]]{1}[[:d:]]{1,4}[ ]?|[ ]{5})\\]){3}");
+//                std::regex_search(line, m, re1);
+//                pass = pass && (m.size() == 3);
+////                if (! pass) {
+////                    std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
+////                }
+//            }
+//            getline(ss, line);
+//            std::regex re2("Status:");
+//            std::regex_search(line, m, re2);
+//            pass = pass && (m.size() == 1);
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("7x6 grid, automatic population");
+//
+//        {
+//            Game g(7, 6, false);
+//
+//            std::stringstream ss;
+//            ss << g;
+//            std::string line;
+//            getline(ss, line);
+//            std::regex re("Round [[:d:]]{1,3}");
+//            std::smatch m;
+//            std::regex_search(line, m, re);
+//            pass = (m.size() == 1);
+////            if (! pass) std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
+//            for (int i = 0; i < 6; i++) {
+//                getline(ss, line);
+//                std::regex re1("(\\[([[:alpha:]]{1}[[:d:]]{1,4}[ ]?|[ ]{5})\\]){7}");
+//                std::regex_search(line, m, re1);
+//                pass = pass && (m.size() == 3);
+////                if (! pass) {
+////                    std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
+////                }
+//            }
+//            getline(ss, line);
+//            std::regex re2("Status:");
+//            std::regex_search(line, m, re2);
+//            pass = pass && (m.size() == 1);
+//
+//            ec.result(pass);
+//        }
+//    }
+//}
+//
+//// Randomization of motion
+//void test_game_randomization(ErrorContext &ec, unsigned int numRuns) {
+//    bool pass;
+//
+//    // Run at least once!!
+//    assert(numRuns > 0);
+//
+//    ec.DESC("--- Test - Game - Randomization ---");
+//
+//    for (int run = 0; run < numRuns; run++) {
+//
+//        ec.DESC("position randomizer");
+//
+//        {
+//            std::vector<int> positions;
+//            for (int i = 0; i < 4; i++) positions.push_back(i);
+//            for (int i = 5; i < 9; i++) positions.push_back(i);
+//            Position pos;
+//            unsigned counts[9];
+//            for (auto &c : counts) c = 0;
+//            for (int i = 0; i < 1000; i++) {
+//                pos = Game::randomPosition(positions);
+//                ++ counts[pos.x * 3 + pos.y];
+//            }
+//
+//            pass = counts[0] > 100 &&
+//                    counts[1] > 100 &&
+//                    counts[2] > 100 &&
+//                    counts[3] > 100 &&
+//                    counts[4] == 0 &&
+//                    counts[5] > 100 &&
+//                    counts[6] > 100 &&
+//                    counts[7] > 100 &&
+//                    counts[8] > 100;
+//
+//            if (! pass) for (auto c : counts) std::cout << c << ' ';
+//
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("position randomizer, empty vector (exception generated)");
+//
+//        {
+//            std::vector<int> positions;
+//
+//            try {
+//                Position pos = Game::randomPosition(positions);
+//                pass = false;
+//            } catch (PosVectorEmptyEx &ex) {
+//                std::cerr << "Exception generated: " << ex << std::endl;
+//                pass = (ex.getName() == "PosVectorEmptyEx");
+//            }
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("random walk of a Simple agent");
+//
+//        {
+//            Game g(101, 101);
+//            Position pos(50, 50);
+//            g.addSimple(Position(pos), 1000 * Game::STARTING_AGENT_ENERGY);
+//            const Piece *piece = g.getPiece(pos.x, pos.y);
+//
+//            unsigned actionCounts[ActionType::STAY + 1];
+//            for (auto &a : actionCounts) a = 0;
+//            Position oldPos = pos;
+//            for (int i = 0; i < 1000; i ++) {
+//                g.round();
+//                pos = piece->getPosition();
+//                assert(pos.x != oldPos.x || pos.y != oldPos.y);
+//                assert(piece->isViable());
+//                ActionType actionType = g.reachSurroundings(oldPos, pos);
+//                ++ actionCounts[actionType];
+//                oldPos = pos;
+//            }
+//
+//            pass = actionCounts[ActionType::NE] > 100 &&
+//                    actionCounts[ActionType::NW] > 100 &&
+//                    actionCounts[ActionType::N] > 100 &&
+//                    actionCounts[ActionType::W] > 100 &&
+//                    actionCounts[ActionType::E] > 100 &&
+//                    actionCounts[ActionType::SW] > 100 &&
+//                    actionCounts[ActionType::SE] > 100 &&
+//                    actionCounts[ActionType::S] > 100 &&
+//                    actionCounts[ActionType::STAY] == 0;
+//
+//            if (! pass) {
+//                std::cout << std::endl;
+//                for (auto c : actionCounts) std::cout << c << ' ';
+//            }
+//
+//            ec.result(pass);
+//        }
+//
+//    }
+//}
+//
+//// Playing and termination of a game
+//void test_game_play(ErrorContext &ec, unsigned int numRuns) {
+//    bool pass;
+//
+//    // Run at least once!!
+//    assert(numRuns > 0);
+//
+//    ec.DESC("--- Test - Game - Play ---");
+//
+//    for (int run = 0; run < numRuns; run++) {
+//
+//        ec.DESC("3x3 grid, manual, game w/o resources terminates immediately");
+//
+//        {
+//            Game g; // manual = true, by default
+//
+//            g.play(); // verbose = false, by default
+//
+//            pass = (g.getNumResources() == 0);
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("3x3 grid, manual, 1 simple, 1 resource");
+//
+//        {
+//            Game g; // manual = true, by default
+//            g.addSimple(1, 1);
+//            g.addFood(2, 2);
+//
+//            g.play(false); // verbose = false, by default
+//
+//            pass = (g.getNumResources() == 0) &&
+//                   (g.getNumAgents() == 1);
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("3x3 grid, manual, 1 simple, 2 resources");
+//
+//        {
+//            Game g; // manual = true, by default
+//            g.addSimple(1, 1);
+//            g.addFood(2, 2);
+//            g.addAdvantage(1, 0);
+//
+//            g.play(false); // verbose = false, by default
+//
+//            pass = (g.getNumResources() == 0) &&
+//                   (g.getNumAgents() == 1);
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("3x3 grid, manual, 1 simple, 3 resources");
+//
+//        {
+//            Game g; // manual = true, by default
+//            g.addSimple(0, 0);
+//            g.addFood(0, 2);
+//            g.addFood(2, 2);
+//            g.addAdvantage(1, 0);
+//
+//            g.play(false); // verbose = false, by default
+//
+//            pass = (g.getNumResources() == 0) &&
+//                   (g.getNumAgents() == 1);
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("3x3 grid, manual, 2 simple, 3 resources");
+//
+//        {
+//            Game g; // manual = true, by default
+//            g.addSimple(0, 0);
+//            g.addSimple(0, 1);
+//            g.addFood(0, 2);
+//            g.addFood(2, 2);
+//            g.addAdvantage(1, 0);
+//
+//            g.play(false); // verbose = false, by default
+//
+//            pass = (g.getNumResources() == 0) &&
+//                   (g.getNumAgents() == 2);
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("3x3 grid, manual, 3 simple, 3 resources");
+//
+//        {
+//            Game g; // manual = true, by default
+//            g.addSimple(0, 0);
+//            g.addSimple(0, 1);
+//            g.addSimple(1, 1);
+//            g.addFood(0, 2);
+//            g.addFood(2, 2);
+//            g.addAdvantage(1, 0);
+//
+//            g.play(false); // verbose = false, by default
+//
+//            pass = (g.getNumResources() == 0) &&
+//                   (g.getNumAgents() == 3);
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("3x3 grid, manual, 1 default strategic, 1 simple, 3 resources");
+//
+//        {
+//            Game g; // manual = true, by default
+//            g.addSimple(0, 0);
+//            g.addStrategic(0, 1);
+//            g.addFood(0, 2);
+//            g.addFood(2, 2);
+//            g.addAdvantage(1, 0);
+//
+//            g.play(false); // verbose = false, by default
+//
+//            pass = (g.getNumResources() == 0) &&
+//                   (g.getNumStrategic() == 1) &&
+//                   (g.getNumSimple() == 1);
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("3x3 grid, manual, 1 aggressive strategic, 3 resources");
+//
+//        {
+//            Game g; // manual = true, by default
+//            g.addStrategic(0, 1, new AggressiveAgentStrategy(Game::STARTING_AGENT_ENERGY));
+//            g.addFood(0, 2);
+//            g.addFood(2, 2);
+//            g.addAdvantage(1, 0);
+//
+//            g.play(false); // verbose = false, by default
+//
+//            pass = (g.getNumResources() == 0) &&
+//                   (g.getNumStrategic() == 1);
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("3x3 grid, manual, 1 aggressive strategic, 1 far simple, 3 res");
+//
+//        {
+//            Game g; // manual = true, by default
+//            // In this configuration, the Simple and Strategic are far from each other
+//            // and they might or might not get close to each other before the
+//            // Resources run out
+//            g.addStrategic(0, 1, new AggressiveAgentStrategy(Game::STARTING_AGENT_ENERGY));
+//            g.addSimple(2, 1);
+//            g.addFood(0, 2);
+//            g.addFood(2, 2);
+//            g.addAdvantage(1, 0);
+//
+//            g.play(false); // verbose = false, by default
+//
+//            pass = (g.getNumResources() == 0) &&
+//                   (g.getNumStrategic() == 1 ) &&
+//                   (g.getNumSimple() <= 1); // randomized game play
+//
+//            ec.result(pass);
+//        }
+//
+//
+//        ec.DESC("3x3 grid, manual, 1 aggressive strategic, 1 near simple, 3 res");
+//
+//        {
+//            Game g; // manual = true, by default
+//
+//            // In this configuration, the Simple gets an Advantage and when the
+//            // aggressive Strategic challenges it, the Strategic loses and disappears
+//            g.addSimple(0, 0);
+//            g.addStrategic(0, 1, new AggressiveAgentStrategy(Game::STARTING_AGENT_ENERGY));
+//            g.addFood(0, 2);
+//            g.addFood(2, 2);
+//            g.addAdvantage(1, 0);
+//
+//            g.play(false); // verbose = false, by default
+//
+//            pass = (g.getNumResources() == 0) &&
+//                   (g.getNumSimple() == 1) &&
+//                   (g.getNumStrategic() == 0);
+//
+//            ec.result(pass);
+//        }
+//
+//        ec.DESC("3x3 grid, manual, 1 def, 1 aggr, 1 simple, 2 resources");
+//
+//        {
+//            Game g; // manual = true, by default
+//            // In this situation, the default flees, the aggressive attacks either
+//            // the default or the Simple, and the dies with it, leaving the other
+//            // one to win
+//            g.addStrategic(0, 0);
+//            g.addSimple(1, 0);
+//            g.addStrategic(0, 1, new AggressiveAgentStrategy(Game::STARTING_AGENT_ENERGY));
+//            g.addFood(0, 2);
+//            g.addFood(2, 2);
+//
+//            g.play(false); // verbose = false, by default
+//
+//            pass = (g.getNumResources() == 0) &&
+//                   ((g.getNumStrategic() == 1 && g.getNumSimple() == 0) ||
+//                    (g.getNumStrategic() == 0 && g.getNumSimple() == 1));
+//
+//            ec.result(pass);
+//        }
     }
 }

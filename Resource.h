@@ -22,7 +22,7 @@ namespace Gaming {
         ~Resource();
 
         virtual double getCapacity() const { return __capacity; }
-        virtual double consume();
+        virtual double consume();   //TODO What is this supposed to do?
 
         void age() override final;
 
