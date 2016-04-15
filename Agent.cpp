@@ -24,7 +24,12 @@ void Agent::age() {
 }
 
 Piece &Agent::operator*(Piece &other) {
-    return other.interact(this);
+    Agent *simple = dynamic_cast<Agent*>(&other);
+    if(simple)
+        return this->interact(simple);
+    Resource *resource = dynamic_cast<Resource*>(&other);
+    if(resource)
+        return  this->interact(resource);
 }
 
 Piece &Agent::interact(Agent * other) {

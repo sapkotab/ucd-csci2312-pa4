@@ -18,14 +18,16 @@ Resource::~Resource() {
 }
 
 double Resource::consume() {
-    double temp = getCapacity();
+    double temp = __capacity;
     this->__capacity = 0;
     finish();
     return temp;
 }
 
 void Resource::age() {
-    __capacity -=RESOURCE_SPOIL_FACTOR;   // TODO if we divide they are never goona age.
+    __capacity /=RESOURCE_SPOIL_FACTOR;
+    if (__capacity < 0.01)
+        __capacity = 0;
 }
 
 // if resource doesn't move why it would interact with anyone?

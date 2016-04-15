@@ -85,7 +85,7 @@ void PosVectorEmptyEx::__print_args(std::ostream &os) const {
 }
 
 PosVectorEmptyEx::PosVectorEmptyEx() {
-
+    setName("PosVectorEmptyEx");
 }
 
 

@@ -4,7 +4,7 @@
 
 
 #include "Advantage.h"
-#include <iomanip>
+#include <sstream>
 using namespace Gaming;
 
 const char Advantage::ADVANTAGE_ID = 'D';
@@ -19,7 +19,11 @@ Advantage::~Advantage() {
 }
 
 void Advantage::print(std::ostream &os) const {
-    os << ADVANTAGE_ID << __id ;
+    std::stringstream ss;
+    ss << ADVANTAGE_ID << __id;
+    std::string s;
+    getline(ss,s);
+    os << s;
 }
 
 double Advantage::getCapacity() const {
@@ -28,7 +32,7 @@ double Advantage::getCapacity() const {
 
 double Advantage::consume() {
     double temp = getCapacity();
-    this->__capacity = 0;
+    __capacity = 0;
     finish();
     return temp;
 }

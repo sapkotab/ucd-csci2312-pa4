@@ -7,9 +7,7 @@
 #include <regex>
 
 #include "GamingTests.h"
-#include "ErrorContext.h"
 #include "Game.h"
-#include "Exceptions.h"
 #include "Simple.h"
 #include "Strategic.h"
 #include "Food.h"
@@ -92,7 +90,9 @@ void test_piece_print(ErrorContext &ec, unsigned int numRuns) {
             int id = 0;
             std::regex re("S[[:d:]]{1,}[ ]"); // ECMAScript, by default
             std::smatch m;
-            std::regex_search(ss.str(), m, re);
+            std::string search_str(ss.str()); // convert string to lvalue
+//            std::regex_search(ss.str(), m, re);
+            std::regex_search(search_str, m, re);
             if (m.size() != 1) { // parse problem
                 pass = false;
             } else {
@@ -210,8 +210,8 @@ void test_piece_energy(ErrorContext &ec, unsigned int numRuns) {
             Resource *r0 = &f, *r1 = &a;
 
             pass = (agent->getEnergy() == Game::STARTING_AGENT_ENERGY) &&
-                    (r0->getCapacity() == Game::STARTING_RESOURCE_CAPACITY) &&
-                    (r1->getCapacity() == Game::STARTING_RESOURCE_CAPACITY * Advantage::ADVANTAGE_MULT_FACTOR);
+                   (r0->getCapacity() == Game::STARTING_RESOURCE_CAPACITY) &&
+                   (r1->getCapacity() == Game::STARTING_RESOURCE_CAPACITY * Advantage::ADVANTAGE_MULT_FACTOR);
 
             ec.result(pass);
         }
@@ -333,7 +333,7 @@ void test_piece_turntaking(ErrorContext &ec, unsigned int numRuns) {
                     { piece[0]->takeTurn(surr[0]), piece[1]->takeTurn(surr[1]) };
 
             pass = (actions[0] == ActionType::STAY) &&
-                    (actions[1] == ActionType::STAY);
+                   (actions[1] == ActionType::STAY);
 
             ec.result(pass);
         }
@@ -797,14 +797,14 @@ void test_action_smoketest(ErrorContext &ec) {
         g.addSimple(1, 1); Position pos(1, 1);
 
         pass = g.isLegal(ActionType::N, pos) &&
-                g.isLegal(ActionType::NE, pos) &&
-                g.isLegal(ActionType::NW, pos) &&
-                g.isLegal(ActionType::E, pos) &&
-                g.isLegal(ActionType::W, pos) &&
-                g.isLegal(ActionType::SE, pos) &&
-                g.isLegal(ActionType::SW, pos) &&
-                g.isLegal(ActionType::S, pos) &&
-                g.isLegal(ActionType::STAY, pos);
+               g.isLegal(ActionType::NE, pos) &&
+               g.isLegal(ActionType::NW, pos) &&
+               g.isLegal(ActionType::E, pos) &&
+               g.isLegal(ActionType::W, pos) &&
+               g.isLegal(ActionType::SE, pos) &&
+               g.isLegal(ActionType::SW, pos) &&
+               g.isLegal(ActionType::S, pos) &&
+               g.isLegal(ActionType::STAY, pos);
     }
     ec.result(pass);
 
@@ -984,9 +984,9 @@ void test_game_populate(ErrorContext &ec, unsigned int numRuns) {
             }
 
             pass = pass &&
-                          (g.getNumPieces() == 7) &&
-                          (g.getNumAgents() == 3) &&
-                          (g.getNumResources() == 4);
+                   (g.getNumPieces() == 7) &&
+                   (g.getNumAgents() == 3) &&
+                   (g.getNumResources() == 4);
 
             ec.result(pass);
         }
@@ -1019,14 +1019,14 @@ void test_game_populate(ErrorContext &ec, unsigned int numRuns) {
 
             ec.result(pass);
         }
-//
+
         ec.DESC("3x3 grid, auto population");
 
         {
             Game g(3, 3, false);
 
             pass = (g.getNumAgents() == 2) &&
-                    (g.getNumResources() == 4);
+                   (g.getNumResources() == 4);
 
             ec.result(pass);
         }
@@ -1051,7 +1051,7 @@ void test_game_populate(ErrorContext &ec, unsigned int numRuns) {
                    (g.getNumResources() == 40);
 
             if (! pass) std::cout << g.getNumAgents() << ' '
-                << g.getNumResources() << ' ' << std::endl << g << ' ';
+                        << g.getNumResources() << ' ' << std::endl << g << ' ';
 
             ec.result(pass);
         }
@@ -1196,7 +1196,7 @@ void test_game_getpiece(ErrorContext &ec, unsigned int numRuns){
 
             ec.result(pass);
         }
-//
+
         ec.DESC("4x5 grid, auto population");
 
         {
@@ -1260,184 +1260,184 @@ void test_game_getpiece(ErrorContext &ec, unsigned int numRuns){
 
             ec.result(pass);
         }
-//    }
-//}
-//
-//
-//// Printing of a game
-//void test_game_print(ErrorContext &ec, unsigned int numRuns) {
-//    bool pass;
-//
-//    // Run at least once!!
-//    assert(numRuns > 0);
-//
-//    ec.DESC("--- Test - Game - Print ---");
-//
-//    for (int run = 0; run < numRuns; run++) {
-//
-//        ec.DESC("3x3 grid, automatic population");
-//
-//        {
-//            Game g(3, 3, false);
-//
-//            std::stringstream ss;
-//            ss << g;
-//            std::string line;
-//            getline(ss, line);
-//            std::regex re("Round [[:d:]]{1,3}");
-//            std::smatch m;
-//            std::regex_search(line, m, re);
-//            pass = (m.size() == 1);
-////            if (! pass) std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
-//            for (int i = 0; i < 3; i++) {
-//                getline(ss, line);
-//                std::regex re1("(\\[([[:alpha:]]{1}[[:d:]]{1,4}[ ]?|[ ]{5})\\]){3}");
-//                std::regex_search(line, m, re1);
-//                pass = pass && (m.size() == 3);
-////                if (! pass) {
-////                    std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
-////                }
-//            }
-//            getline(ss, line);
-//            std::regex re2("Status:");
-//            std::regex_search(line, m, re2);
-//            pass = pass && (m.size() == 1);
-//
-//            ec.result(pass);
-//        }
-//
-//        ec.DESC("7x6 grid, automatic population");
-//
-//        {
-//            Game g(7, 6, false);
-//
-//            std::stringstream ss;
-//            ss << g;
-//            std::string line;
-//            getline(ss, line);
-//            std::regex re("Round [[:d:]]{1,3}");
-//            std::smatch m;
-//            std::regex_search(line, m, re);
-//            pass = (m.size() == 1);
-////            if (! pass) std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
-//            for (int i = 0; i < 6; i++) {
-//                getline(ss, line);
-//                std::regex re1("(\\[([[:alpha:]]{1}[[:d:]]{1,4}[ ]?|[ ]{5})\\]){7}");
-//                std::regex_search(line, m, re1);
-//                pass = pass && (m.size() == 3);
-////                if (! pass) {
-////                    std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
-////                }
-//            }
-//            getline(ss, line);
-//            std::regex re2("Status:");
-//            std::regex_search(line, m, re2);
-//            pass = pass && (m.size() == 1);
-//
-//            ec.result(pass);
-//        }
-//    }
-//}
-//
-//// Randomization of motion
-//void test_game_randomization(ErrorContext &ec, unsigned int numRuns) {
-//    bool pass;
-//
-//    // Run at least once!!
-//    assert(numRuns > 0);
-//
-//    ec.DESC("--- Test - Game - Randomization ---");
-//
-//    for (int run = 0; run < numRuns; run++) {
-//
-//        ec.DESC("position randomizer");
-//
-//        {
-//            std::vector<int> positions;
-//            for (int i = 0; i < 4; i++) positions.push_back(i);
-//            for (int i = 5; i < 9; i++) positions.push_back(i);
-//            Position pos;
-//            unsigned counts[9];
-//            for (auto &c : counts) c = 0;
-//            for (int i = 0; i < 1000; i++) {
-//                pos = Game::randomPosition(positions);
-//                ++ counts[pos.x * 3 + pos.y];
-//            }
-//
-//            pass = counts[0] > 100 &&
-//                    counts[1] > 100 &&
-//                    counts[2] > 100 &&
-//                    counts[3] > 100 &&
-//                    counts[4] == 0 &&
-//                    counts[5] > 100 &&
-//                    counts[6] > 100 &&
-//                    counts[7] > 100 &&
-//                    counts[8] > 100;
-//
-//            if (! pass) for (auto c : counts) std::cout << c << ' ';
-//
-//
-//            ec.result(pass);
-//        }
-//
-//        ec.DESC("position randomizer, empty vector (exception generated)");
-//
-//        {
-//            std::vector<int> positions;
-//
-//            try {
-//                Position pos = Game::randomPosition(positions);
-//                pass = false;
-//            } catch (PosVectorEmptyEx &ex) {
-//                std::cerr << "Exception generated: " << ex << std::endl;
-//                pass = (ex.getName() == "PosVectorEmptyEx");
-//            }
-//
-//            ec.result(pass);
-//        }
-//
-//        ec.DESC("random walk of a Simple agent");
-//
-//        {
-//            Game g(101, 101);
-//            Position pos(50, 50);
-//            g.addSimple(Position(pos), 1000 * Game::STARTING_AGENT_ENERGY);
-//            const Piece *piece = g.getPiece(pos.x, pos.y);
-//
-//            unsigned actionCounts[ActionType::STAY + 1];
-//            for (auto &a : actionCounts) a = 0;
-//            Position oldPos = pos;
-//            for (int i = 0; i < 1000; i ++) {
-//                g.round();
-//                pos = piece->getPosition();
-//                assert(pos.x != oldPos.x || pos.y != oldPos.y);
-//                assert(piece->isViable());
-//                ActionType actionType = g.reachSurroundings(oldPos, pos);
-//                ++ actionCounts[actionType];
-//                oldPos = pos;
-//            }
-//
-//            pass = actionCounts[ActionType::NE] > 100 &&
-//                    actionCounts[ActionType::NW] > 100 &&
-//                    actionCounts[ActionType::N] > 100 &&
-//                    actionCounts[ActionType::W] > 100 &&
-//                    actionCounts[ActionType::E] > 100 &&
-//                    actionCounts[ActionType::SW] > 100 &&
-//                    actionCounts[ActionType::SE] > 100 &&
-//                    actionCounts[ActionType::S] > 100 &&
-//                    actionCounts[ActionType::STAY] == 0;
-//
-//            if (! pass) {
-//                std::cout << std::endl;
-//                for (auto c : actionCounts) std::cout << c << ' ';
-//            }
-//
-//            ec.result(pass);
-//        }
-//
-//    }
-//}
-//
+    }
+}
+
+
+// Printing of a game
+void test_game_print(ErrorContext &ec, unsigned int numRuns) {
+    bool pass;
+
+    // Run at least once!!
+    assert(numRuns > 0);
+
+    ec.DESC("--- Test - Game - Print ---");
+
+    for (int run = 0; run < numRuns; run++) {
+
+        ec.DESC("3x3 grid, automatic population");
+
+        {
+            Game g(3, 3, false);
+
+            std::stringstream ss;
+            ss << g;
+            std::string line;
+            getline(ss, line);
+            std::regex re("Round [[:d:]]{1,3}");
+            std::smatch m;
+            std::regex_search(line, m, re);
+            pass = (m.size() == 1);
+//            if (! pass) std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
+            for (int i = 0; i < 3; i++) {
+                getline(ss, line);
+                std::regex re1("(\\[([[:alpha:]]{1}[[:d:]]{1,4}[ ]?|[ ]{5})\\]){3}");
+                std::regex_search(line, m, re1);
+                pass = pass && (m.size() == 3);
+//                if (! pass) {
+//                    std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
+//                }
+            }
+            getline(ss, line);
+            std::regex re2("Status:");
+            std::regex_search(line, m, re2);
+            pass = pass && (m.size() == 1);
+
+            ec.result(pass);
+        }
+
+        ec.DESC("7x6 grid, automatic population");
+
+        {
+            Game g(7, 6, false);
+
+            std::stringstream ss;
+            ss << g;
+            std::string line;
+            getline(ss, line);
+            std::regex re("Round [[:d:]]{1,3}");
+            std::smatch m;
+            std::regex_search(line, m, re);
+            pass = (m.size() == 1);
+//            if (! pass) std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
+            for (int i = 0; i < 6; i++) {
+                getline(ss, line);
+                std::regex re1("(\\[([[:alpha:]]{1}[[:d:]]{1,4}[ ]?|[ ]{5})\\]){7}");
+                std::regex_search(line, m, re1);
+                pass = pass && (m.size() == 3);
+//                if (! pass) {
+//                    std::cout << m[0] << ' ' << m[1] << ' ' << m.size() << std::endl;
+//                }
+            }
+            getline(ss, line);
+            std::regex re2("Status:");
+            std::regex_search(line, m, re2);
+            pass = pass && (m.size() == 1);
+
+            ec.result(pass);
+        }
+    }
+}
+
+// Randomization of motion
+void test_game_randomization(ErrorContext &ec, unsigned int numRuns) {
+    bool pass;
+
+    // Run at least once!!
+    assert(numRuns > 0);
+
+    ec.DESC("--- Test - Game - Randomization ---");
+
+    for (int run = 0; run < numRuns; run++) {
+
+        ec.DESC("position randomizer");
+
+        {
+            std::vector<int> positions;
+            for (int i = 0; i < 4; i++) positions.push_back(i);
+            for (int i = 5; i < 9; i++) positions.push_back(i);
+            Position pos;
+            unsigned counts[9];
+            for (auto &c : counts) c = 0;
+            for (int i = 0; i < 1000; i++) {
+                pos = Game::randomPosition(positions);
+                ++ counts[pos.x * 3 + pos.y];
+            }
+
+            pass = counts[0] > 100 &&
+                   counts[1] > 100 &&
+                   counts[2] > 100 &&
+                   counts[3] > 100 &&
+                   counts[4] == 0 &&
+                   counts[5] > 100 &&
+                   counts[6] > 100 &&
+                   counts[7] > 100 &&
+                   counts[8] > 100;
+
+            if (! pass) for (auto c : counts) std::cout << c << ' ';
+
+
+            ec.result(pass);
+        }
+
+        ec.DESC("position randomizer, empty vector (exception generated)");
+
+        {
+            std::vector<int> positions;
+
+            try {
+                Position pos = Game::randomPosition(positions);
+                pass = false;
+            } catch (PosVectorEmptyEx &ex) {
+                std::cerr << "Exception generated: " << ex << std::endl;
+                pass = (ex.getName() == "PosVectorEmptyEx");
+            }
+
+            ec.result(pass);
+        }
+
+        ec.DESC("random walk of a Simple agent");
+
+        {
+            Game g(101, 101);
+            Position pos(50, 50);
+            g.addSimple(Position(pos), 1000 * Game::STARTING_AGENT_ENERGY);
+            const Piece *piece = g.getPiece(pos.x, pos.y);
+
+            unsigned actionCounts[ActionType::STAY + 1];
+            for (auto &a : actionCounts) a = 0;
+            Position oldPos = pos;
+            for (int i = 0; i < 1000; i ++) {
+                g.round();
+                pos = piece->getPosition();
+                assert(pos.x != oldPos.x || pos.y != oldPos.y);
+                assert(piece->isViable());
+                ActionType actionType = g.reachSurroundings(oldPos, pos);
+                ++ actionCounts[actionType];
+                oldPos = pos;
+            }
+
+            pass = actionCounts[ActionType::NE] > 100 &&
+                   actionCounts[ActionType::NW] > 100 &&
+                   actionCounts[ActionType::N] > 100 &&
+                   actionCounts[ActionType::W] > 100 &&
+                   actionCounts[ActionType::E] > 100 &&
+                   actionCounts[ActionType::SW] > 100 &&
+                   actionCounts[ActionType::SE] > 100 &&
+                   actionCounts[ActionType::S] > 100 &&
+                   actionCounts[ActionType::STAY] == 0;
+
+            if (! pass) {
+                std::cout << std::endl;
+                for (auto c : actionCounts) std::cout << c << ' ';
+            }
+
+            ec.result(pass);
+        }
+
+    }
+}
+
 //// Playing and termination of a game
 //void test_game_play(ErrorContext &ec, unsigned int numRuns) {
 //    bool pass;
@@ -1519,7 +1519,7 @@ void test_game_getpiece(ErrorContext &ec, unsigned int numRuns){
 //            g.addFood(2, 2);
 //            g.addAdvantage(1, 0);
 //
-//            g.play(false); // verbose = false, by default
+//            g.play(true); // verbose = false, by default
 //
 //            pass = (g.getNumResources() == 0) &&
 //                   (g.getNumAgents() == 2);
@@ -1648,5 +1648,5 @@ void test_game_getpiece(ErrorContext &ec, unsigned int numRuns){
 //
 //            ec.result(pass);
 //        }
-    }
-}
+//    }
+//}

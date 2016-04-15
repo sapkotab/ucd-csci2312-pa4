@@ -4,7 +4,7 @@
 
 
 #include "Simple.h"
-#include <iomanip>
+#include <sstream>
 using namespace Gaming;
 
 const char Simple::SIMPLE_ID = 'S';
@@ -18,19 +18,37 @@ Simple::~Simple() {
 }
 
 void Simple::print(std::ostream &os) const {
-    os << SIMPLE_ID <<__id ;
+    std::stringstream ss;
+    ss << SIMPLE_ID << __id;
+    std::string s;
+    getline(ss,s);
+    os << s;
 }
 
 ActionType Simple::takeTurn(const Surroundings &s) const {
-    // temp solution until randomization work
-    for (int i = s.array.size()-1; i >= 0; --i) {
-        if(s.array[i]==FOOD|| s.array[i]==ADVANTAGE)
-            return ActionType(i);
+
+    std::vector <ActionType> action = {NW,N,NE,W,STAY,E,SW,S,SE};
+    std::vector <int> pieceIndex;
+
+    for (int i=0; i< s.array.size(); ++i) {
+        if(s.array[i]==FOOD|| s.array[i]==ADVANTAGE) {
+            pieceIndex.push_back(i);
+        }
+    }
+    if(pieceIndex.size()>0){
+        PositionRandomizer p;
+        Position ps = p(pieceIndex);
+        return action[(ps.x*3 + ps.y)];
     }
 
-    for (int i = s.array.size()-1; i >= 0; --i) {
+    for (int i=0; i< s.array.size(); ++i) {
         if(s.array[i]==EMPTY)
-            return ActionType(i);
+            pieceIndex.push_back(i);
+    }
+    if(pieceIndex.size()>0){
+        PositionRandomizer p;
+        Position ps = p(pieceIndex);
+        return action[(ps.x*3 + ps.y)];
     }
     return STAY;
 

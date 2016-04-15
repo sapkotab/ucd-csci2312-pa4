@@ -3,7 +3,7 @@
 //
 
 #include "Food.h"
-#include <iomanip>
+#include <sstream>
 using namespace Gaming;
 
 const char Food::FOOD_ID = 'F';
@@ -16,7 +16,12 @@ Food::~Food() {
 }
 
 void Food::print(std::ostream &os) const {
-    os << FOOD_ID << __id;
+
+    std::stringstream ss;
+    ss << FOOD_ID << __id;
+    std::string s;
+    getline(ss,s);
+    os << s;
 }
 
 

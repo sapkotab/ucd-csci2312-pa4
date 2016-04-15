@@ -1,6 +1,7 @@
 //
 // Created by bhuwan sapkota on 4/2/16.
 //
+#include <iomanip>
 #include "Game.h"
 //TODO I don't want them in here.
 #include "Simple.h"
@@ -12,6 +13,7 @@
 using namespace Gaming;
 
 // given constacts // requirements
+PositionRandomizer Game::__posRandomizer;
 
 const unsigned  int Game::NUM_INIT_AGENT_FACTOR = 4;
 const unsigned int Game::NUM_INIT_RESOURCE_FACTOR = 2;
@@ -76,6 +78,8 @@ void Game::populate() {
 }
 
 Game::Game() {
+    __numInitAgents = 0;
+    __numInitResources = 0;
     __width = 3;
     __height = 3;
     __round = 0;
@@ -89,6 +93,8 @@ Game::Game() {
 
 Game::Game(unsigned width, unsigned height, bool manual) {
     if(width < MIN_WIDTH || height < MIN_HEIGHT) throw InsufficientDimensionsEx(MIN_WIDTH,MIN_HEIGHT,width,height);
+    __numInitAgents = 0;
+    __numInitResources = 0;
     __width = width;
     __height = height;
     __verbose = false;
@@ -256,14 +262,19 @@ void Game::addAdvantage(unsigned x, unsigned y) {
 
 const Surroundings Game::getSurroundings(const Position &pos) const {
     Surroundings temp;
+    int tempX = pos.x-1;
 
     for (int i = 0; i < 3; ++i) {
-        int tempX = pos.x-1;
+        int tempY = pos.y-1;
         for (int j = 0; j < 3; ++j) {
-            int tempY = pos.y-1;
-            if(tempX < 0 ||tempX >__width || tempY<0 || tempY > __height) {
+            if(((tempX * __width) + tempY)==((pos.x*__width)+pos.y))
+                temp.array[(i * 3) + j] = SELF;
+            else if(tempX < 0 ||tempX >__height-1 || tempY<0 || tempY > __width-1)
+            {
                 temp.array[(i * 3) + j] = INACCESSIBLE;
             }
+            else if (__grid[(tempX * __width) + tempY] == nullptr)
+                temp.array[(i * 3) + j] = EMPTY;
             else {
                 temp.array[(i * 3) + j] = __grid[(tempX * __width) + tempY]->getType();
             }
@@ -305,8 +316,22 @@ const ActionType Game::reachSurroundings(const Position &from, const Position &t
 }
 
 bool Game::isLegal(const ActionType &ac, const Position &pos) const {
-//we don't have to compare to zero because x,y are unsigned
-    return!(pos.x > __width || pos.y > __height);
+    Surroundings ss = getSurroundings(pos);
+    std::vector <ActionType> direction = {NW,N,NE,W,STAY,E,SW,S,SE};
+    int directionInt;
+    bool valid;
+    for (int i = 0; i < direction.size(); ++i) {
+        if(direction[i]== ac) {
+            directionInt = i;
+            break;
+        }
+    }
+    if(ss.array[directionInt] != INACCESSIBLE)
+        valid = true;
+    else
+        valid = false;
+
+    return valid;
 
 }
 
@@ -333,11 +358,12 @@ const Position Game::move(const Position &pos, const ActionType &ac) const {
 }
 
 void Game::round() {
-    for (int i = 0; i < __grid.size(); ++i) {
-        if(__grid[i]->isViable()){
-            if(!__grid[i]->getTurned()){
+    for (int i = 0; i < __grid.size(); ++i)
+        if(__grid[i]!= nullptr){
+            if(__grid[i]->isViable()){
+                if(!__grid[i]->getTurned()){
                 __grid[i]->setTurned(true);
-                if(__grid[i]->getType() == SIMPLE || __grid[i]->getType() == STRATEGIC) {
+                    if(__grid[i]->getType() == SIMPLE || __grid[i]->getType() == STRATEGIC) {
 
                     ActionType aT = __grid[i]->takeTurn(getSurroundings(__grid[i]->getPosition()));
                     if(aT != STAY) {
@@ -353,9 +379,9 @@ void Game::round() {
                                 __grid[i] = nullptr;
                             }
                         } else {
-                            __grid[i]->setPosition(__grid[((movingPos.x) * __width) + (movingPos.y)]->getPosition());
-                            __grid[((movingPos.x) * __width) + (movingPos.y)] = __grid[i];
-                            __grid[i]= nullptr;
+//                            __grid[i]->setPosition(__grid[((movingPos.x) * __width) + (movingPos.y)]->getPosition());
+//                            __grid[((movingPos.x) * __width) + (movingPos.y)] = __grid[i];
+//                            __grid[i]= nullptr;
                         }
 
                     }
@@ -367,12 +393,20 @@ void Game::round() {
 }
 
 void Game::play(bool verbose) {
-
+    __verbose = verbose;
 }
 
 
 
 std::ostream & Gaming::operator<<(std::ostream &os, const Game &game) {
+    os << "Round " << game.__round << std::endl;
+    for (int i = 0; i < game.__height; ++i) {
+        for (int j = 0; j < game.__width; ++j) {
+            os << '[' << std::setw(5) <<std::left << *game.__grid[i*game.__width+j] << ']';
+        }
+        os << std::endl;
+    }
+    os << "Status: " << game.__status << "..." << std::endl;
     return os;
 }
 

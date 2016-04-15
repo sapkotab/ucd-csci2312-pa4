@@ -4,7 +4,7 @@
 
 
 #include "Strategic.h"
-#include <iomanip>
+#include <sstream>
 using namespace Gaming;
 
 const char Strategic::STRATEGIC_ID = 'T';
@@ -18,27 +18,16 @@ Strategic::~Strategic() {
 }
 
 void Strategic::print(std::ostream &os) const {
-    os << STRATEGIC_ID << __id;
+    std::stringstream ss;
+    ss << STRATEGIC_ID << __id;
+    std::string s;
+    getline(ss,s);
+    os << s;
 }
 
 ActionType Strategic::takeTurn(const Surroundings &s) const {
-    for (int i = s.array.size()-1; i >= 0; --i) {
-        if(s.array[i]==ADVANTAGE)
-            return ActionType(i);
-    }
-    for (int i = s.array.size()-1; i >= 0; --i) {
-        if(s.array[i]==FOOD)
-            return ActionType(i);
-    }
-    for (int i = s.array.size()-1; i >= 0; --i) {
-        if(s.array[i]==EMPTY)
-            return ActionType(i);
-    }
-    for (int i = s.array.size()-1; i >= 0; --i) {
-        if(s.array[i]==SIMPLE)
-            return ActionType(i);
-    }
-    return STAY;
+    return (*this->__strategy)(s);
+
 }
 
 

@@ -15,6 +15,7 @@ Piece::Piece(const Game &g, const Position &p):__game(g) {
     __turned = false;
     __position = p;
 
+
 }
 
 Piece::~Piece() {
@@ -22,7 +23,10 @@ Piece::~Piece() {
 }
 
 std::ostream & Gaming::operator<<(std::ostream &os, const Piece &piece) {
-    piece.print(os);
+   if(&piece != nullptr)
+        piece.print(os);
+   else
+       os << "";
     return os;
 }
 
