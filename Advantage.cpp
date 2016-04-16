@@ -34,7 +34,7 @@ double Advantage::consume() {
     double temp = getCapacity();
     __capacity = 0;
     finish();
-    return temp;
+    return (temp);
 }
 
 

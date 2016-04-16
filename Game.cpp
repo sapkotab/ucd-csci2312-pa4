@@ -3,7 +3,6 @@
 //
 #include <iomanip>
 #include "Game.h"
-//TODO I don't want them in here.
 #include "Simple.h"
 #include "Strategic.h"
 #include "Advantage.h"
@@ -106,18 +105,6 @@ Game::Game(unsigned width, unsigned height, bool manual) {
     if(!manual)
         populate();
 }
-
-//Game::Game(const Game &another) {
-//
-//    __width = another.__width;
-//    __height = another.__height;
-//    __verbose = another.__verbose;
-//    __round = another.__round;
-//    __status = another.__status;
-//    for (int i = 0; i < another.__grid.size(); ++i) {
-//      __grid[i]= another.__grid[i]; // may need to use new operator?
-//    }
-//}
 
 Game::~Game() { // deleting all the grids if they are filled.
     for (int i = 0; i < __grid.size(); ++i) {
@@ -326,74 +313,111 @@ bool Game::isLegal(const ActionType &ac, const Position &pos) const {
             break;
         }
     }
-    if(ss.array[directionInt] != INACCESSIBLE)
-        valid = true;
-    else
-        valid = false;
+    valid = ss.array[directionInt] != INACCESSIBLE;
 
     return valid;
 
 }
 
 const Position Game::move(const Position &pos, const ActionType &ac) const {
+
+    Position newPos;
+    // finding the posion of new grid on that direction.
     if(ac == NW)
-        return Position(pos.x-1,pos.y-1);
+        newPos = Position(pos.x-1,pos.y-1);
     else if(ac == N)
-        return Position(pos.x-1,pos.y);
+        newPos = Position(pos.x-1,pos.y);
     else if(ac == NE)
-        return Position(pos.x-1,pos.y+1);
+        newPos = Position(pos.x-1,pos.y+1);
     else if(ac == W)
-        return Position(pos.x,pos.y-1);
+        newPos = Position(pos.x,pos.y-1);
     else if(ac == STAY)
-        return Position(pos.x,pos.y);
+        newPos = Position(pos.x,pos.y);
     else if(ac == E)
-        return Position(pos.x,pos.y+1);
+        newPos = Position(pos.x,pos.y+1);
     else if(ac == SW)
-        return Position(pos.x+1,pos.y-1);
+        newPos = Position(pos.x+1,pos.y-1);
     else if(ac == S)
-        return Position(pos.x+1,pos.y);
+        newPos = Position(pos.x+1,pos.y);
     else if(ac == SE)
-        return Position(pos.x+1,pos.y+1);
-    return pos;
+        newPos = Position(pos.x+1,pos.y+1);
+
+    return newPos;
 }
 
 void Game::round() {
-    for (int i = 0; i < __grid.size(); ++i)
-        if(__grid[i]!= nullptr){
-            if(__grid[i]->isViable()){
-                if(!__grid[i]->getTurned()){
-                __grid[i]->setTurned(true);
-                    if(__grid[i]->getType() == SIMPLE || __grid[i]->getType() == STRATEGIC) {
 
-                    ActionType aT = __grid[i]->takeTurn(getSurroundings(__grid[i]->getPosition()));
-                    if(aT != STAY) {
-                        Position movingPos = move(__grid[i]->getPosition(), aT);
-                        if(__grid[((movingPos.x) * __width) + (movingPos.y)]!= nullptr) {
-                            (*__grid[i]) * (*__grid[((movingPos.x) * __width) + (movingPos.y)]);
-                            Agent *fromA = dynamic_cast<Agent *>(__grid[i]);
-                            Agent *toA = dynamic_cast<Agent *>(__grid[((movingPos.x) * __width) + (movingPos.y)]);
-                            if (fromA->isViable()) {
-                                fromA->setPosition(toA->getPosition());
-                                delete toA;
-                                __grid[((movingPos.x) * __width) + (movingPos.y)] = fromA;
-                                __grid[i] = nullptr;
+    if(__round == 0 && __verbose){
+        __status = PLAYING;
+        std::cout << std::endl << *this;
+    }
+    for (int i = 0; i < __grid.size(); ++i) {               // to iterate through grid vector.
+        if(__grid[i]!= nullptr){                            // if grid is not empty
+            if(__grid[i]->isViable()) {
+                if (!__grid[i]->getTurned()) {
+                    Agent * agent = dynamic_cast<Agent*>(__grid[i]);
+                    if(agent) {
+                        __grid[i]->setTurned(true);                     // if it able to play
+                        Position currentPos = __grid[i]->getPosition();
+                        Surroundings s = getSurroundings(currentPos);
+                        ActionType aT = __grid[i]->takeTurn(s);
+                        if (aT != STAY) {                           // if it want to move to another grid
+                            Position newPos = move(currentPos, aT);
+                            int newPosIndx = (newPos.x * __width + newPos.y); // new grid index
+                            (*__grid[i]) * (*__grid[newPosIndx]);           // interaction between pieces
+                            if(!__grid[i]->isViable()){
+                                delete __grid[i];
+                                __grid[i]= nullptr;
                             }
-                        } else {
-//                            __grid[i]->setPosition(__grid[((movingPos.x) * __width) + (movingPos.y)]->getPosition());
-//                            __grid[((movingPos.x) * __width) + (movingPos.y)] = __grid[i];
-//                            __grid[i]= nullptr;
+                            else {
+                                __grid[i]->setPosition(newPos);
+                                if (__grid[newPosIndx] != nullptr) {       // if newposition is not empty take care that
+                                    delete __grid[newPosIndx];
+                                    __grid[newPosIndx] = __grid[i];
+                                    __grid[i] = nullptr;
+                                }
+                                else {
+                                    __grid[newPosIndx] = __grid[i];
+                                    __grid[i] = nullptr;
+                                }
+                            }
+                            if(!__grid[newPosIndx]->isViable()){
+                                delete __grid[newPosIndx];
+                                __grid[newPosIndx]= nullptr;
+                            }
                         }
-
                     }
-
                 }
             }
         }
     }
+    for (int j = 0; j < __grid.size(); ++j) {
+        if(__grid[j] != nullptr) {
+            if (!__grid[j]->isViable()) {
+                delete __grid[j];
+                __grid[j] = nullptr;
+            }
+            else {
+                __grid[j]->setTurned(false);
+                __grid[j]->age();
+            }
+        }
+    }
+    if(getNumPieces()< 2 || getNumResources() < 1)
+        __status = OVER;
+    ++__round; //
+
+    if(__verbose)
+        std::cout << std::endl << *this;
+
 }
 
 void Game::play(bool verbose) {
     __verbose = verbose;
+    round();
+    if(getNumPieces()>1 && getNumResources() > 0) {
+        play(verbose);
+    }
 }
 
 
@@ -406,7 +430,12 @@ std::ostream & Gaming::operator<<(std::ostream &os, const Game &game) {
         }
         os << std::endl;
     }
-    os << "Status: " << game.__status << "..." << std::endl;
+    if(game.__status == Game::NOT_STARTED)
+        os << "Status: Not Started...";
+    else if(game.__status == Game::PLAYING)
+        os << "Status: Playing...";
+    else
+        os << "Status: Over!";
     return os;
 }
 

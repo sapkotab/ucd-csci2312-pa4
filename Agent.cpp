@@ -6,6 +6,7 @@
 #include "Agent.h"
 #include "Food.h"
 #include "Advantage.h"
+#include "Strategic.h"
 
 using namespace Gaming;
 
@@ -24,28 +25,33 @@ void Agent::age() {
 }
 
 Piece &Agent::operator*(Piece &other) {
-    Agent *simple = dynamic_cast<Agent*>(&other);
-    if(simple)
-        return this->interact(simple);
+    Agent *otherAgent = dynamic_cast<Agent*>(&other);
+    if(otherAgent)
+        return this->interact(otherAgent);
+
     Resource *resource = dynamic_cast<Resource*>(&other);
     if(resource)
         return  this->interact(resource);
+    return *this;
 }
 
 Piece &Agent::interact(Agent * other) {
     // whichever has more energy live
-    if(this->__energy > other->__energy){
-        this->__energy -=other->__energy;
+    if(__energy > other->__energy){
+        __energy -=other->__energy;
+        other->__energy = 0;
         other->finish();
     }
-    else if (other->__energy > this->__energy){
-        other->__energy-=this->__energy;
-        this->finish();
+    else if (__energy < other->__energy){
+        other->__energy -=__energy;
+        __energy=0;
+        finish();
     }
         // if both have same energy both will die.
-    else {
-        this->__energy = other->__energy = 0;
-        this->finish();
+    else{
+        __energy = 0.0;
+        other->__energy = 0.0;
+        finish();
         other->finish();
     }
     return *this;
@@ -54,16 +60,6 @@ Piece &Agent::interact(Agent * other) {
 Piece &Agent::interact(Resource * other) {
 
     this->addEnergy(other->consume());
-
-//    Resource *resrce = dynamic_cast<Food*>(other); // casting to real class
-//    if (resrce) {
-//        this->addEnergy(resrce->consume());
-//    }
-//
-//        resrce = dynamic_cast<Advantage*>(other); // casting to real class
-//    if (resrce->getType()==ADVANTAGE) {
-//        this->addEnergy(resrce->consume());
-//    }
 
     return *this;
 }

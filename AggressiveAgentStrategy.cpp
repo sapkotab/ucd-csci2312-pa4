@@ -21,65 +21,64 @@ ActionType AggressiveAgentStrategy::operator()(const Surroundings &s) const{
 
     std::vector <ActionType> action = {NW,N,NE,W,STAY,E,SW,S,SE};
     std::vector <int> pieceIndex;
+    int numDir=0;
 
-    if(this->__agentEnergy >= DEFAULT_AGGRESSION_THRESHOLD) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    if(__agentEnergy >= DEFAULT_AGGRESSION_THRESHOLD) {
         for (int i=0; i< s.array.size(); ++i) {
-            if(s.array[i]==SIMPLE){
+            if(s.array[i]==SIMPLE || s.array[i]==STRATEGIC) {
                 pieceIndex.push_back(i);
+                numDir++;
             }
-
         }
-        if(pieceIndex.size()>0){
-            PositionRandomizer p;
-            Position ps = p(pieceIndex);
-            return action[(ps.x*3 + ps.y)];
+        if(numDir>0){
+            std::uniform_int_distribution<> dis(0,numDir-1);
+            return action[pieceIndex[dis(gen)]];
         }
 
-        for (int i=0; i< s.array.size(); ++i) {
-            if(s.array[i]==STRATEGIC){
-                pieceIndex.push_back(i);
-            }
-
-        }
-        if(pieceIndex.size()>0){
-            PositionRandomizer p;
-            Position ps = p(pieceIndex);
-            return action[(ps.x*3 + ps.y)];
-        }
+//        for (int i=0; i< s.array.size(); ++i) {
+//            if(s.array[i]==STRATEGIC) {
+//                pieceIndex.push_back(i);
+//                numDir++;
+//            }
+//        }
+//        if(numDir>0){
+//            std::uniform_int_distribution<> dis(0,numDir-1);
+//            return action[pieceIndex[dis(gen)]];
+//        }
     }
     for (int i=0; i< s.array.size(); ++i) {
-        if(s.array[i]==ADVANTAGE){
+        if(s.array[i]==ADVANTAGE) {
             pieceIndex.push_back(i);
+            numDir++;
         }
-
     }
-    if(pieceIndex.size()>0){
-        PositionRandomizer p;
-        Position ps = p(pieceIndex);
-        return action[(ps.x*3 + ps.y)];
+    if(numDir>0){
+        std::uniform_int_distribution<> dis(0,numDir-1);
+        return action[pieceIndex[dis(gen)]];
     }
 
     for (int i=0; i< s.array.size(); ++i) {
-        if(s.array[i]==FOOD){
+        if(s.array[i]==FOOD) {
             pieceIndex.push_back(i);
+            numDir++;
         }
-
     }
-    if(pieceIndex.size()>0){
-        PositionRandomizer p;
-        Position ps = p(pieceIndex);
-        return action[(ps.x*3 + ps.y)];
+    if(numDir>0){
+        std::uniform_int_distribution<> dis(0,numDir-1);
+        return action[pieceIndex[dis(gen)]];
     }
     for (int i=0; i< s.array.size(); ++i) {
-        if(s.array[i]==EMPTY){
+        if(s.array[i]==EMPTY) {
             pieceIndex.push_back(i);
+            numDir++;
         }
-
     }
-    if(pieceIndex.size()>0){
-        PositionRandomizer p;
-        Position ps = p(pieceIndex);
-        return action[(ps.x*3 + ps.y)];
+    if(numDir>0){
+        std::uniform_int_distribution<> dis(0,numDir-1);
+        return action[pieceIndex[dis(gen)]];
     }
     return STAY;
 

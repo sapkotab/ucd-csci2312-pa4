@@ -11,7 +11,7 @@ void GamingException::setName(std::string name) {
 }
 
 std::ostream &Gaming::operator<<(std::ostream &os, const GamingException &ex){
-    os << ex.getName() << std::endl;
+    ex.__print_args(os);
     return os;
 }
 
@@ -40,7 +40,7 @@ unsigned DimensionEx::getHeight() const {
 
 
 void InsufficientDimensionsEx::__print_args(std::ostream &os) const {
- //TODO
+
 }
 
 InsufficientDimensionsEx::InsufficientDimensionsEx(unsigned minWidth, unsigned minHeight, unsigned width,
@@ -51,7 +51,10 @@ InsufficientDimensionsEx::InsufficientDimensionsEx(unsigned minWidth, unsigned m
 
 
 void OutOfBoundsEx::__print_args(std::ostream &os) const {
-//TODO
+    os << "Name: "<< __name << std::endl;
+    os << "Game grid "<<__exp_height <<'x' << __exp_width << std::endl;
+    os << "co-ordinate (" << __width <<", "<< __height << ")" << std::endl;
+
 }
 
 OutOfBoundsEx::OutOfBoundsEx(unsigned maxWidth, unsigned maxHeight, unsigned width, unsigned height):
@@ -61,7 +64,8 @@ OutOfBoundsEx::OutOfBoundsEx(unsigned maxWidth, unsigned maxHeight, unsigned wid
 
 
 void PositionEx::__print_args(std::ostream &os) const {
-//TODO
+    os << "Name: "<< __name << std::endl;
+    os << "co_ordinate "<< '(' <<__x <<","<<__y << ')' << std::endl;
 }
 
 PositionEx::PositionEx(unsigned x, unsigned y) {
@@ -81,7 +85,7 @@ PositionEmptyEx::PositionEmptyEx(unsigned x, unsigned y):PositionEx(x,y) {
 
 
 void PosVectorEmptyEx::__print_args(std::ostream &os) const {
-    //TODO
+    os << "Name: "<< __name << std::endl;
 }
 
 PosVectorEmptyEx::PosVectorEmptyEx() {

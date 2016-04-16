@@ -11,12 +11,13 @@ using std::endl;
 
 using namespace Testing;
 
-//#include "Game.h"
-//#include "Simple.h"
-//#include "Strategic.h"
-//#include "Advantage.h"
-//#include "Food.h"
-//using namespace Gaming;
+#include "Game.h"
+#include "Simple.h"
+#include "Strategic.h"
+#include "Advantage.h"
+#include "Food.h"
+//#include "AggressiveAgentStrategy.h" //TODO edited
+using namespace Gaming;
 
 int main() {
 
@@ -54,7 +55,26 @@ int main() {
     test_game_populate(ec, NumIters);
     test_game_getpiece(ec, NumIters);
     test_game_print(ec, NumIters);
-//    test_game_randomization(ec, NumIters);
-//    test_game_play(ec, NumIters);
+    test_game_randomization(ec, NumIters);
+    test_game_play(ec, NumIters);
+
+//    Game g; // manual = true, by default
+//    // In this configuration, the Simple and Strategic are far from each other
+//    // and they might or might not get close to each other before the
+//    // Resources run out
+//    g.addStrategic(0, 1, new AggressiveAgentStrategy(Game::STARTING_AGENT_ENERGY));
+//    g.addSimple(2, 1);
+//    g.addFood(0, 2);
+//    g.addFood(2, 2);
+//    g.addAdvantage(1, 0);
+//    Piece *T = (Piece *) g.getPiece(0, 1);
+//    Piece *S = (Piece *) g.getPiece(1, 1);
+//    Piece *F1 = (Piece *) g.getPiece(0, 2);
+//    Piece *F2 = (Piece *) g.getPiece(2, 2);
+//    Piece *D = (Piece *) g.getPiece(, 1);
+//
+//
+//
+//    g.play(); // verbose = false, by default
     return 0;
 }
