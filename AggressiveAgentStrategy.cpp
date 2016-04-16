@@ -38,16 +38,6 @@ ActionType AggressiveAgentStrategy::operator()(const Surroundings &s) const{
             return action[pieceIndex[dis(gen)]];
         }
 
-//        for (int i=0; i< s.array.size(); ++i) {
-//            if(s.array[i]==STRATEGIC) {
-//                pieceIndex.push_back(i);
-//                numDir++;
-//            }
-//        }
-//        if(numDir>0){
-//            std::uniform_int_distribution<> dis(0,numDir-1);
-//            return action[pieceIndex[dis(gen)]];
-//        }
     }
     for (int i=0; i< s.array.size(); ++i) {
         if(s.array[i]==ADVANTAGE) {

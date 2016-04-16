@@ -197,7 +197,7 @@ void Game::addSimple(unsigned x, unsigned y, double energy) {
 }
 
 void Game::addStrategic(const Position &position, Strategy *s) {
-   Strategic *t = new Strategic(*this,position,STARTING_RESOURCE_CAPACITY,s);
+   Strategic *t = new Strategic(*this,position,STARTING_AGENT_ENERGY,s);
 
     if((position.x*__width + position.y)>__grid.size())
         throw OutOfBoundsEx(__width,__height,position.x,position.y);
