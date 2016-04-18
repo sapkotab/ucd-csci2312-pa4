@@ -30,21 +30,19 @@ void Resource::age() {
         __capacity = 0;
 }
 
-// if resource doesn't move why it would interact with anyone?
-// all of the following should be just a tricky implementation
-
+// if resources doen't move.
 ActionType Resource::takeTurn(const Surroundings &s) const {
     return STAY;
 }
-
+//resources do not initiate interactions
 Piece &Resource::operator*(Piece &other) {
     return *this;
 }
-
+//resources do not initiate interactions
 Piece &Resource::interact(Agent *) {
     return *this;
 }
-
+//resources do not initiate interactions
 Piece &Resource::interact(Resource *) {
     return *this;
 }
